@@ -2,8 +2,3 @@
 name = "path"
 kind = "lib"
 unsafe = false
-
-[dependencies]
-array = { git = "https://github.com/bats-lang/array.git", version = "main" }
-arith = { git = "https://github.com/bats-lang/arith.git", version = "main" }
-str = { git = "https://github.com/bats-lang/str.git", version = "main" }
