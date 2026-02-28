@@ -79,16 +79,9 @@ implement join {la}{na}{lb}{nb}{lo}{mo}
      i: int i): void =
     if i >= base_len then ()
     else let
-      val gi = g1ofg0(i)
-    in
-      if gi >= 0 then
-        if gi < max then let
-          val b = $A.read<byte>(base, i)
-          val () = $A.set<byte>(out, gi, b)
-        in copy_base(out, max, base, base_len, i + 1) end
-        else ()
-      else ()
-    end
+      val b = $A.read<byte>(base, i)
+      val () = $A.set<byte>(out, $AR.checked_idx(i, max), b)
+    in copy_base(out, max, base, base_len, i + 1) end
 
   (* Copy name bytes starting at offset *)
   fun copy_name {lo:agz}{mo:pos}{lb:agz}{nb:pos}{i:nat | i <= nb} .<nb - i>.
@@ -97,26 +90,16 @@ implement join {la}{na}{lb}{nb}{lo}{mo}
      i: int i, offset: int): void =
     if i >= name_len then ()
     else let
-      val dst = g1ofg0(offset + i)
-    in
-      if dst >= 0 then
-        if dst < max then let
-          val b = $A.read<byte>(name, i)
-          val () = $A.set<byte>(out, dst, b)
-        in copy_name(out, max, name, name_len, i + 1, offset) end
-        else ()
-      else ()
-    end
+      val b = $A.read<byte>(name, i)
+      val () = $A.set<byte>(out, $AR.checked_idx(offset + i, max), b)
+    in copy_name(out, max, name, name_len, i + 1, offset) end
 in
   if $AR.gt_int_int(total, max) then 0
   else let
     val () = copy_base(out, max, base, base_len, 0)
     (* Write / separator *)
-    val sep_pos = g1ofg0(base_len)
-    val () = (if sep_pos >= 0 then
-      if sep_pos < max then
-        $A.set<byte>(out, sep_pos,
-          $A.int2byte($AR.checked_byte(SLASH)))): void
+    val () = $A.set<byte>(out, $AR.checked_idx(base_len, max),
+      $A.int2byte($AR.checked_byte(SLASH)))
     val () = copy_name(out, max, name, name_len, 0, base_len + 1)
   in total end
 end
@@ -132,18 +115,12 @@ implement parent {la}{na} (path, path_len) = let
     else if $AR.lte_int_int(i, 0) then 0
     else let
       val idx = i - 1
-      val gi = g1ofg0(idx)
+    in let
+      val c = byte2int0($A.read<byte>(path, $AR.checked_idx(idx, path_len)))
     in
-      if gi >= 0 then
-        if gi < path_len then let
-          val c = byte2int0($A.read<byte>(path, gi))
-        in
-          if $AR.eq_int_int(c, SLASH) then idx
-          else loop(path, path_len, idx, rem - 1)
-        end
-        else 0
-      else 0
-    end
+      if $AR.eq_int_int(c, SLASH) then idx
+      else loop(path, path_len, idx, rem - 1)
+    end end
 in loop(path, path_len, path_len, $AR.checked_nat(path_len)) end
 
 (* -- filename -- *)
@@ -157,11 +134,8 @@ implement filename {la}{na} (path, path_len) = let
     else if $AR.lte_int_int(i, 0) then 0
     else let
       val idx = i - 1
-      val gi = g1ofg0(idx)
-    in
-      if gi >= 0 then
-        if gi < path_len then let
-          val c = byte2int0($A.read<byte>(path, gi))
+    in let
+      val c = byte2int0($A.read<byte>(path, $AR.checked_idx(idx, path_len)))
         in
           if $AR.eq_int_int(c, SLASH) then i
           else loop(path, path_len, idx, rem - 1)
@@ -184,18 +158,12 @@ implement extension {la}{na} (path, path_len) = let
     else if $AR.lte_int_int(i, fname_start) then path_len
     else let
       val idx = i - 1
-      val gi = g1ofg0(idx)
+    in let
+      val c = byte2int0($A.read<byte>(path, $AR.checked_idx(idx, path_len)))
     in
-      if gi >= 0 then
-        if gi < path_len then let
-          val c = byte2int0($A.read<byte>(path, gi))
-        in
-          if $AR.eq_int_int(c, DOT) then i
-          else loop(path, path_len, idx, fname_start, rem - 1)
-        end
-        else path_len
-      else path_len
-    end
+      if $AR.eq_int_int(c, DOT) then i
+      else loop(path, path_len, idx, fname_start, rem - 1)
+    end end
 in loop(path, path_len, path_len, fname_start, $AR.checked_nat(path_len)) end
 
 (* -- is_absolute -- *)
