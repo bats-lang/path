@@ -2,3 +2,8 @@
 name = "path"
 kind = "lib"
 unsafe = false
+
+[dependencies]
+"arith" = ""
+"array" = ""
+"str" = ""
