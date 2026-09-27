@@ -50,3 +50,9 @@ jobs:
         run: |
           export PATH=~/bats-bin:$PATH
           bats test --repository ~/repository
+
+      - name: Dynamic tests
+        run: |
+          sudo apt-get install -y valgrind
+          export PATH=~/bats-bin:$PATH
+          tests/dynamic/run.sh ~/repository

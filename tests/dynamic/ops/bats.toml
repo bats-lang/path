@@ -1,0 +1,8 @@
+[package]
+name = "ops"
+kind = "bin"
+
+[dependencies]
+"array" = ""
+"path" = ""
+"str" = ""
